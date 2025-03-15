@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Posts</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin: 80px 0;
+            font-size: 32px;
+            color: #ff9100; 
+            font-family: cursive;
+
+        }
+        
+        .post-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .post {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.616);
+            transition: 0.3s ease-in-out;
+        }
+
+        .post:hover {
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.192);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #ffbb00;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .post h2 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .post p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .post img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .post-actions i {
+            font-size: 24px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .post-actions i.liked {
+            color: #007bff;
+        }
+
+        .post-actions i:hover {
+            color: #ff9100;
+        }
+
+        @media (max-width: 900px) {
+            .post-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .post-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    
+    <nav>
+        <div class="nav-container">
+            <div class="logo">R_W Blog</div>
+            <div class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+            <ul id="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="signup.html" id="signup-link">Signup</a></li>
+                <li><a href="login.html" id="login-link">Login</a></li>
+       
+           
+            </ul>
+            <button id="logout-btn" class="logout-btn" style="display: none;">Logout</button>
+        </div>
+    </nav>
+
+    <h1>Favorite Posts</h1>
+    <div id="favPostContainer" class="post-container"></div>
+
+    <script type="module" src="js/navbar.js"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    
+
+
+
+
+
+
+
+    
+    
+    <!-- navbr toggel -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelector(".menu-toggle").addEventListener("click", function () {
+                let navLinks = document.getElementById("nav-links");
+                if (navLinks) {
+                    navLinks.classList.toggle("show");
+                } else {
+                    console.error("nav-links element not found!");
+                }
+            });
+        });
+    </script>
+
+    <script>
+        window.addEventListener("load", function () {
+            let favPosts = JSON.parse(localStorage.getItem("posts")) || []; 
+            let favPostContainer = document.getElementById("favPostContainer");
+
+
+            let likedPosts = favPosts.filter(post => post.liked);
+
+
+            function renderFavPosts(posts) {
+                favPostContainer.innerHTML = "";
+
+                if (posts.length > 0) {
+                    posts.forEach((post) => {
+                        favPostContainer.innerHTML += `
+                            <div class="post" id="post-${post.id}">
+                                <div class="post-header">
+                                    <div class="avatar">${post.avatar}</div>
+                                    <h3>${post.author}</h3>
+                                </div>
+                                <h2>${post.title}</h2>
+                                <p>${post.description}</p>
+                                <img src="${post.image}" alt="Post Image">
+                                <p><strong>Posted on:</strong> ${post.dateTime}</p>
+                                <div class="post-actions">
+                                    <i class="fa fa-thumbs-up liked" onclick="toggleUnlike(${post.id})"></i>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    favPostContainer.innerHTML = "<p>No favorite posts yet.</p>";
+                }
+
+                updateFavCount(); 
+            }
+
+            renderFavPosts(likedPosts);
+
+ 
+            window.toggleUnlike = function (postId) {
+     
+                const postIndex = favPosts.findIndex(post => post.id === postId);
+
+                if (postIndex !== -1) {
+                    favPosts[postIndex].liked = false; 
+
+           
+                    localStorage.setItem("posts", JSON.stringify(favPosts));
+
+              
+                    const postElement = document.getElementById(`post-${postId}`);
+                    if (postElement) {
+                        postElement.remove();
+                    }
+
+                    likedPosts = favPosts.filter(post => post.liked);
+                    updateFavCount(); 
+                }
+            };
+
+        
+            function updateFavCount() {
+                let favPosts = JSON.parse(localStorage.getItem("posts")) || []; // Fetch posts from localStorage
+                let likedPosts = favPosts.filter(post => post.liked); // Only count liked posts
+                document.getElementById("favCount").innerText = likedPosts.length; // Update count in the navbar
+            }
+
+         
+            updateFavCount();
+        });
+    </script>
+
+</body>
+</html>
