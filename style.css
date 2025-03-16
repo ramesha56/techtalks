@@ -95,7 +95,7 @@ body {
         @media (max-width: 480px) {
             .menu-toggle {
                 display: block;
-                margin-right: 40px;
+                margin-right: 60px;
             }
             nav ul {
                 display: none;
@@ -105,7 +105,7 @@ body {
 
                 position: absolute;
                 top: 60px;
-                left: 0;
+                
                 width: 100%;
                 text-align: center;
             }
